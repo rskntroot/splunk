@@ -1,0 +1,153 @@
+networks:
+  traefik_net:
+    driver: overlay
+    external: true
+
+services:
+  traefik:
+    image: traefik:latest
+    deploy:
+      placement:
+        constraints:
+          - node.labels.traefik-public.traefik-public-certificates == true
+    command:
+      - --configFile=/etc/traefik/traefik.yml
+    ports:
+      - 80:80
+      - 8080:8080
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /opt/docker/traefik:/etc/traefik:ro
+    networks:
+      - traefik_net
+
+  search01:
+    networks:
+      traefik_net:
+        aliases:
+          - search01
+    image: splunk/splunk:8.2.4
+    hostname: search01
+    deploy:
+      labels: 
+        - traefik.enable=true
+        - traefik.http.routers.search.entrypoints=web
+        - traefik.http.routers.search.rule=Host(`search.rskdev.io`)
+        - traefik.http.routers.search.service=search@docker
+        - traefik.http.services.search.loadbalancer.server.port=8000
+        - traefik.http.services.search.loadbalancer.sticky=true
+        - traefik.http.services.search.loadbalancer.sticky.cookie.name=rskdev-session-token
+#        - traefik.http.services.search.loadbalancer.sticky.cookie.secure=true
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_INDEXER_URL=index01
+      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+      - SPLUNK_ROLE=splunk_search_head_captain
+      - SPLUNK_DEPLOYER_URL=deployer
+    ports:
+      - 8000
+      - 8089
+    volumes:
+      - /opt/docker/splunk/default.yml:/tmp/defaults/default.yml
+
+  search02:
+    networks:
+      traefik_net:
+        aliases:
+          - search02
+    image: splunk/splunk:8.2.4
+    hostname: search02
+    deploy:
+      labels: 
+        - traefik.enable=true
+        - traefik.http.routers.search.entrypoints=web
+        - traefik.http.routers.search.rule=Host(`search.rskdev.io`)
+        - traefik.http.routers.search.service=search@docker
+        - traefik.http.services.search.loadbalancer.server.port=8000
+        - traefik.http.services.search.loadbalancer.sticky=true
+        - traefik.http.services.search.loadbalancer.sticky.cookie.name=rskdev-session-token
+#        - traefik.http.services.search.loadbalancer.sticky.cookie.secure=true
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_INDEXER_URL=index01
+      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+      - SPLUNK_ROLE=splunk_search_head
+      - SPLUNK_DEPLOYER_URL=deployer
+    ports:
+      - 8000
+      - 8089
+    volumes:
+      - /opt/docker/splunk/default.yml:/tmp/defaults/default.yml
+
+  search03:
+    networks:
+      traefik_net:
+        aliases:
+          - search03
+    image: splunk/splunk:8.2.4
+    hostname: search03
+    deploy:
+      labels: 
+        - traefik.enable=true
+        - traefik.http.routers.search.entrypoints=web
+        - traefik.http.routers.search.rule=Host(`search.rskdev.io`)
+        - traefik.http.routers.search.service=search@docker
+        - traefik.http.services.search.loadbalancer.server.port=8000
+        - traefik.http.services.search.loadbalancer.sticky=true
+        - traefik.http.services.search.loadbalancer.sticky.cookie.name=rskdev-session-token
+#        - traefik.http.services.search.loadbalancer.sticky.cookie.secure=true
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_INDEXER_URL=index01
+      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+      - SPLUNK_ROLE=splunk_search_head
+      - SPLUNK_DEPLOYER_URL=deployer
+    ports:
+      - 8000
+      - 8089
+    volumes:
+      - /opt/docker/splunk/default.yml:/tmp/defaults/default.yml
+
+  deployer:
+    networks:
+      traefik_net:
+        aliases:
+          - deployer
+    image: splunk/splunk:8.2.4
+    deploy:
+      labels: 
+        - traefik.enable=true
+        - traefik.http.routers.deployer.entrypoints=web
+        - traefik.http.routers.deployer.rule=Host(`deployer.rskdev.io`)
+        - traefik.http.routers.deployer.service=deployer@docker
+        - traefik.http.services.deployer.loadbalancer.server.port=8000
+    hostname: deployer
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_INDEXER_URL=index01
+      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+      - SPLUNK_ROLE=splunk_deployer
+      - SPLUNK_DEPLOYER_URL=deployer
+    volumes:
+      - /opt/docker/splunk/default.yml:/tmp/defaults/default.yml
+
+  index01:
+    networks:
+      traefik_net:
+        aliases:
+          - index01
+    image: splunk/splunk:8.2.4
+    hostname: index01
+    environment:
+      - SPLUNK_START_ARGS=--accept-license
+      - SPLUNK_INDEXER_URL=index01
+      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+      - SPLUNK_ROLE=splunk_indexer
+      - SPLUNK_DEPLOYER_URL=deployer
+    volumes:
+      - /opt/docker/splunk/default.yml:/tmp/defaults/default.yml
