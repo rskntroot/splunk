@@ -3,7 +3,7 @@ version: "3.6"
 networks:
   traefik_net:
     driver: overlay
-    external: true
+    attachable: true
 
 services:
   traefik:
@@ -19,7 +19,7 @@ services:
       - 8080:8080
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /opt/docker/traefik:/etc/traefik:ro
+      - /opt/docker/splunk/traefik:/etc/traefik:ro
     networks:
       - traefik_net
 
@@ -43,9 +43,9 @@ services:
     environment:
       - SPLUNK_START_ARGS=--accept-license
       - SPLUNK_INDEXER_URL=index01
-      - SPLUNK_SEARCH_HEAD_URL=search02,search03
-      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
-      - SPLUNK_ROLE=splunk_search_head_captain
+#      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+#      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+#      - SPLUNK_ROLE=splunk_search_head_captain
       - SPLUNK_DEPLOYER_URL=deployer
     ports:
       - 8000
@@ -73,9 +73,9 @@ services:
     environment:
       - SPLUNK_START_ARGS=--accept-license
       - SPLUNK_INDEXER_URL=index01
-      - SPLUNK_SEARCH_HEAD_URL=search02,search03
-      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
-      - SPLUNK_ROLE=splunk_search_head
+#      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+#      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+#      - SPLUNK_ROLE=splunk_search_head
       - SPLUNK_DEPLOYER_URL=deployer
     ports:
       - 8000
@@ -103,9 +103,9 @@ services:
     environment:
       - SPLUNK_START_ARGS=--accept-license
       - SPLUNK_INDEXER_URL=index01
-      - SPLUNK_SEARCH_HEAD_URL=search02,search03
-      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
-      - SPLUNK_ROLE=splunk_search_head
+#      - SPLUNK_SEARCH_HEAD_URL=search02,search03
+#      - SPLUNK_SEARCH_HEAD_CAPTAIN_URL=search01
+#      - SPLUNK_ROLE=splunk_search_head
       - SPLUNK_DEPLOYER_URL=deployer
     ports:
       - 8000
@@ -143,6 +143,13 @@ services:
         aliases:
           - index01
     image: splunk/splunk:8.2.4
+    deploy:
+      labels: 
+        - traefik.enable=true
+        - traefik.http.routers.index.entrypoints=web
+        - traefik.http.routers.index.rule=Host(`index.rskdev.io`)
+        - traefik.http.routers.index.service=index@docker
+        - traefik.http.services.index.loadbalancer.server.port=8000
     hostname: index01
     environment:
       - SPLUNK_START_ARGS=--accept-license
