@@ -66,7 +66,7 @@ X.X.X.X            node03
 ````
 Check services in traefik:
 ````
-http://traefik.rskdev.io
+http://traefik.rskdev.io:8080
 ````
 Connect to splunk deployer:
 ````
@@ -74,9 +74,9 @@ http://deployer.rskdev.io
 ````
 
 ## Issue
-Note the search heads fail to come up.
+The search heads fail to come online!
 
-This seems to be due to splunk's ansible setup requiring communication between nodes before the swarm publishes the nodes in docker's dns.
+This seems to be due to splunk's ansible setup requiring communication between nodes before the swarm publishes the nodes in docker's DNS.
 
 You will see the docker service containers continue to become `unhealthy` then get torn down and rebuilt by docker swarm.
 
@@ -98,6 +98,7 @@ Comment out the following from `search01` `search02` `search03` docker-compose.y
 ### 3. Start the Stack
 ````
 docker stack deploy splunk -c docker-compose.yml
+watch docker node ps $(docker node ls -q)
 ````
 ### Manually Configure Search Head Cluster:
 *deployer has already been configured*
@@ -133,7 +134,7 @@ Check the status of the shc via `webgui`
 http://search.rskdev.io/en-US/manager/system/search_head_clustering
 ````
 
-In texting I have found:
+In testing I have found:
 - search functionality, `working` as expected.
 - app deployment, `working` as expected.
 - artifact replication, `working` as expected.
