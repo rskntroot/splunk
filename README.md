@@ -1,4 +1,4 @@
-# Splunk Search Head Clutser Testing on Docker Swarm
+# Splunk Search Head Cluster Testing on Docker Swarm
 This was developed with the intention of replacing the search heads in an existing Indexer Cluster all running on bare metal servers.
 
 ## Topolgy:
