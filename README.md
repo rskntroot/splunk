@@ -1,5 +1,5 @@
-# splunk
-Splunk Search Head Clutser on Docker Swarm
+# Splunk Search Head Clutser Testing on Docker Swarm
+This was developed with the intention of replacing the search heads in an existing Indexer Cluster all running on bare metal servers.
 
 ## Topolgy:
 
@@ -25,7 +25,7 @@ iptables -A INPUT -p tcp --dport 7946 -j ACCEPT
 iptables -A INPUT -p udp --dport 7946 -j ACCEPT
 iptables -A INPUT -p udp --dport 4789 -j ACCEPT
 ````
-*NOTE: this is non-persistent*
+*NOTE: this is does not persistent after reboot*
 
 [Reference] https://www.digitalocean.com/community/tutorials/how-to-configure-the-linux-firewall-for-docker-swarm-on-centos-7
 
